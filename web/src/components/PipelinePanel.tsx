@@ -38,6 +38,9 @@ const parsePoints = (value: string | null | undefined): SummaryPoint[] => {
   if (!value) return [];
   const trimmed = value.trim();
   if (!trimmed) return [];
+  if (trimmed.startsWith('[object')) {
+    return [trimmed];
+  }
   if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
     try {
       const parsed = JSON.parse(trimmed);
@@ -47,6 +50,7 @@ const parsePoints = (value: string | null | undefined): SummaryPoint[] => {
       return [parsed as SummaryPoint];
     } catch (error) {
       console.error('[summary] JSON parse failed', error);
+      return [trimmed];
     }
   }
   return trimmed

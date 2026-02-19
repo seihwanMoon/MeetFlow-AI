@@ -19,25 +19,30 @@ graph LR
   E --> F[공유/협업]
 ```
 
-## 4. 사용법
-1. 회의 ID 선택/생성 → 녹음/업로드 실행
-2. "전사 요청" 버튼으로 STT 처리
-3. "요약/Action 생성"으로 요약/Action Item 확인
-4. "Mermaid 다이어그램 생성"으로 시각화/공유
+## 4. 주요 기능 시연 요약
+1. **회의 생성/업로드**: Meeting ID 생성 → 브라우저 녹음 또는 파일 드롭 → `/api/upload`
+2. **STT & 요약 파이프라인**: `/api/transcribe`(OpenAI Whisper) → `/api/summary`(GPT-4o mini) → Supabase 저장
+3. **UI 편집 플로우**: 전사 검색·요약/Action Item 인라인 수정 → Supabase에 즉시 반영 → 다이어그램 생성
+4. **공유/협업**: `/api/share`로 토큰 발급 → `/share/<token>` 읽기 전용 페이지 배포 → Slack/메일 등에 링크 전파
+5. **유지보수**: `/api/admin/cleanup`으로 30일 지난 recording/diagram + Storage 객체 자동 삭제
 
 ## 5. 기술 스택
-- Next.js(App Router), Tailwind, TypeScript
-- Supabase(Postgres/Storage/Auth), OpenAI Whisper & GPT
-- Mermaid.js 렌더링, MediaRecorder, Zod
-- 문서/체크리스트: `PRD.md`, `DEV_PLAN.md`, `TASKS.md`, `PROGRESS.md`
+- **프론트엔드**: Next.js(App Router, Turbopack), Tailwind, TypeScript, React 19, MediaRecorder
+- **백엔드**: Supabase(Postgres/Storage/Auth), OpenAI Whisper & GPT, Vercel Serverless/API Routes
+- **시각/도구**: Mermaid.js, Zod, SharePanel, README/PRD/DEV_PLAN/TASKS/PROGRESS 문서
 
-## 6. 차별성
-- 녹음→전사→요약→다이어그램까지 End-to-End 파이프라인 자동화
-- 회의 히스토리/녹음 파일명을 그대로 재사용, 저장된 요약 자동 로드
-- Mermaid 서브그래프/색상 기반 다이어그램으로 개요·결정·논의·Action을 한눈에 제공
-- Supabase 기반으로 저장/공유/향후 알림 기능 확장 용이
+## 6. 완성된 차별 포인트
+- 전사→요약→다이어그램→공유까지 단일 UI에서 끝나는 End-to-End 자동화
+- 전사 텍스트 검색/편집, 요약·Action Item 인라인 편집, 회의 히스토리 자동 로드 제공
+- 공유 토큰(`/share/<token>`)으로 비로그인 대상도 읽기 가능, 만료·비활성화 관리
+- Cron/환경 변수 설계(README)에 따라 운영/배포/정리 프로세스를 명확히 문서화
 
-## 7. 향후 계획
-- 요약/Action Item 편집 UI + 키워드 검색
-- 다이어그램 공유 링크/읽기 전용 뷰, 알림 채널(Slack/Email)
-- 회의 템플릿/태그 관리, 검색/필터 기능
+## 7. 배포/운영 현황
+- Vercel(루트: `web`)에 배포 완료, 환경 변수/cron 설정 포함
+- Supabase `share_links` 테이블과 Storage 버킷 구성 완료
+- README/PROGRESS에 전체 기능과 향후 유지보수 항목을 기록해 협업 준비 완료
+
+## 8. 향후 계획
+- 이메일/Slack 알림 채널 연동, 공유 링크 조회 로그/알림 고도화
+- 회의 템플릿/태그, 검색·필터 기능 추가
+- 다국어 모델 지원, 트랜스크립트 편집 히스토리, 정교한 권한 관리

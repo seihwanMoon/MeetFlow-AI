@@ -47,13 +47,14 @@
    - 파일 업로드 드롭존, 지원 확장자 안내.
    - 업로드 후 STT 진행률 표시(폴링/실시간).
 3. **결과 검토 화면**:
-   - 전사 텍스트 뷰 + 키워드 검색.
-   - 요약 섹션(개요/결정/논의) 편집 가능한 카드.
-   - Action Item 테이블(책임자/마감일/상태), 인라인 편집.
+   - 전사 텍스트 뷰 + 키워드 검색 + 인라인 편집/저장 버튼.
+   - 요약 섹션(개요/결정/논의) 편집 가능한 카드와 변경 취소/저장 제어.
+   - Action Item 테이블(책임자/마감일/상태), 인라인 편집 및 Add/Delete 컨트롤.
    - 다이어그램 프리뷰(이미지 or 인터랙티브 뷰), 다운로드/링크 복사 버튼.
 4. **공유 링크 뷰**:
    - 읽기 전용 요약/Action/다이어그램, 만료일 표기.
    - 비로그인 사용자도 접근 가능하도록 토큰화된 URL.
+   - Supabase `share_links` 테이블(토큰, 만료일, last_accessed)과 `/share/[token]` 페이지로 구성, 링크 생성/비활성화는 `/api/share`를 통해 관리.
 
 ## 5. 프로세스 & 일정(예상 4주)
 - Week 1: Vercel/Supabase 설정, Auth/DB 스키마, 업로드 API 도입.
@@ -65,8 +66,9 @@
 - **녹음/업로드**: MediaRecorder → WAV Blob → chunk upload, Supabase Storage pre-signed URL 사용.
 - **전사 파이프라인**: 업로드 후 즉시 `/api/transcribe` 트리거, STT 응답 대기시간이 길 경우 Supabase status=processing으로 두고 Edge Function에서 Webhook 처리.
 - **요약/액션 프롬프트**: 회의 목적/언어 감지 후 템플릿 적용, 액션은 JSON Schema로 파싱해 DB 저장.
-- **다이어그램 생성**: LLM 결과 → Mermaid DSL 제작, 서버에서 `@mermaid-js/mermaid-cli` 또는 cloud 렌더 API 호출, PNG 저장. 초기에는 클라이언트 사이드 렌더링으로 단순화 가능.
+- **다이어그램 생성**: LLM 결과 → Mermaid DSL 제작, 서버에서 `@mermaid-js/mermaid-cli` 또는 cloud 렌더 API 호출, PNG 저장. 초기에는 클라이언트 사이드 렌더링으로 단순화 가능. `buildMermaidDiagram` 유틸리티로 개요/결정/논의/Action Item 허브 노드를 일관되게 생성하고 문자열 길이 제한·개행 치환으로 Mermaid 파서를 보호한다.
 - **보안**: 모든 API는 Supabase 세션 토큰 검증, 업로드/다이어그램 링크는 만료시간/권한 체크. 환경변수는 Vercel env/Supabase secrets에 저장.
+- **유지보수 작업**: `share_links` 토큰 관리 및 `/api/admin/cleanup` Cron으로 30일 지난 recording/diagram 정리, `CRON_SECRET`으로 접근 제어.
 
 ## 7. 테스트 전략
 - 단위: LLM 프롬프트 파서, Action Item 유효성 검사, Supabase RLS 정책 테스트.

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Recorder, type UploadResponse } from '@/components/Recorder';
 import { PipelinePanel } from '@/components/PipelinePanel';
 import { MeetingHistory } from '@/components/MeetingHistory';
+import { SharePanel } from '@/components/SharePanel';
 
 export function HomeClient() {
   const [meetingId, setMeetingId] = useState<string>('');
@@ -48,8 +49,19 @@ export function HomeClient() {
           <div className="space-y-6 lg:col-span-2">
             {meetingId ? (
               <>
-                <Recorder meetingId={meetingId} onMeetingIdChange={handleMeetingIdChange} onUploadComplete={handleUploadComplete} />
-                <PipelinePanel meetingId={meetingId} recordingId={recordingId} onRecordingIdChange={setRecordingId} />
+                <Recorder
+                  key={`recorder-${meetingId}`}
+                  meetingId={meetingId}
+                  onMeetingIdChange={handleMeetingIdChange}
+                  onUploadComplete={handleUploadComplete}
+                />
+                <PipelinePanel
+                  key={`pipeline-${meetingId}`}
+                  meetingId={meetingId}
+                  recordingId={recordingId}
+                  onRecordingIdChange={setRecordingId}
+                />
+                <SharePanel key={`share-${meetingId}`} meetingId={meetingId} />
               </>
             ) : (
               <div className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-sm text-slate-600">

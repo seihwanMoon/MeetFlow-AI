@@ -51,4 +51,17 @@ create table if not exists public.diagrams (
   updated_at timestamptz default now()
 );
 
+create table if not exists public.share_links (
+  id uuid primary key default gen_random_uuid(),
+  meeting_id uuid not null references public.meetings(id) on delete cascade,
+  token text not null unique,
+  expires_at timestamptz,
+  created_at timestamptz default now(),
+  last_accessed_at timestamptz,
+  disabled boolean default false
+);
+
+create index if not exists share_links_meeting_id_idx on public.share_links(meeting_id);
+create index if not exists share_links_token_idx on public.share_links(token);
+
 -- Basic Row Level Security policies can be added once auth strategy is finalized.

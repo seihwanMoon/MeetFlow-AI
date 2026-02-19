@@ -5,4 +5,6 @@ export const env = {
   OPENAI_TRANSCRIBE_MODEL: process.env.OPENAI_TRANSCRIBE_MODEL ?? 'gpt-4o-mini-transcribe',
   OPENAI_SUMMARY_MODEL: process.env.OPENAI_SUMMARY_MODEL ?? 'gpt-4o-mini',
   ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY,
+  CRON_SECRET: process.env.CRON_SECRET,
+  APP_BASE_URL: process.env.NEXT_PUBLIC_APP_URL,
 };

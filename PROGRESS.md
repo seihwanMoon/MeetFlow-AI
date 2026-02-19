@@ -38,5 +38,12 @@
 - `POST /api/admin/cleanup` 엔드포인트를 추가해 30일 이상 지난 녹음/다이어그램을 삭제하고, `CRON_SECRET` 기반으로 보호함. Vercel/Supabase Cron에 바로 붙일 수 있도록 응답에 삭제 수치를 포함함.
 - 공유 패널이 절대 URL을 표시/복사하도록 개선하고, 공유 페이지(`/share/[token]`)에 회의 메타데이터와 전체 링크를 노출해 외부 사용자 경험을 보강함.
 - `README.md`에 환경 변수 및 배포 체크리스트, Cleanup Cron 설정법을 문서화해 실제 배포 전에 확인해야 할 항목을 정리함.
+
+### 개발 완료 기능 요약 (2026-02-19)
+- 브라우저 녹음/파일 업로드 → `/api/upload` → `/api/transcribe` → `/api/summary` → `/api/diagram`까지 STT/요약/다이어그램 파이프라인을 구축하고, `PipelinePanel`에서 상태 조회·편집·다이어그램 미리보기를 제공함.
+- 회의 히스토리·녹음 선택·전사 키워드 검색·요약/Action Item 인라인 편집 UI를 완성했고, Supabase `summaries`/`action_items` 테이블에 결과를 저장하도록 연동함.
+- 공유 기능: `share_links` 테이블, `/api/share` CRUD, `/share/[token]` 읽기 전용 페이지, `SharePanel` UI를 구현해 토큰 기반으로 회의를 외부에 전달할 수 있도록 함.
+- 유지보수: `/api/admin/cleanup` 크론 엔드포인트, `CRON_SECRET` 인증, `README`/DEV_PLAN 배포 가이드 등 운영 문서를 정비함.
+- Vercel 배포 완료(Next.js 16, Turbopack) 및 환경 변수/빌드 설정을 맞춰 실제 URL에서 모든 기능이 동작하도록 검증함.
 - SharePanel 복사 버튼이 브라우저 권한 정책에 막히는 사례를 위해 Clipboard API 실패 시 `document.execCommand('copy')` 기반 폴백을 추가해 어떤 환경에서도 링크 복사가 가능하도록 함.
 - 회의 전환 시 SharePanel과 PipelinePanel이 완전히 초기화되도록 각각 `key`와 상태 리셋을 적용해 요약/공유 링크가 즉시 새 회의 데이터로 갱신되도록 함.

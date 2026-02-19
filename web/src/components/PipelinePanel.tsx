@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import type { SummaryPoint, SummaryResult } from '@/lib/summarizer';
+import { MermaidDiagram } from '@/components/MermaidDiagram';
 
 type PipelinePanelProps = {
   meetingId: string;
@@ -70,6 +71,8 @@ export function PipelinePanel({
   const [statusInfo, setStatusInfo] = useState<StatusResponse | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [lastStatusFetch, setLastStatusFetch] = useState<string | null>(null);
+  const [diagramSource, setDiagramSource] = useState<string>('');
+  const [diagramStatus, setDiagramStatus] = useState<'idle' | 'loading' | 'error' | 'done'>('idle');
 
   useEffect(() => {
     if (propRecordingId && propRecordingId !== recordingId) {
@@ -88,9 +91,8 @@ export function PipelinePanel({
   useEffect(() => {
     setTranscript('');
     setSummary(null);
-    setStatusInfo(null);
-    setStatusError(null);
-    setLastStatusFetch(null);
+    setDiagramSource('');
+    setDiagramStatus('idle');
   }, [meetingId]);
 
   const fetchStatus = useCallback(async () => {
@@ -217,6 +219,33 @@ export function PipelinePanel({
     }
   }, [fetchStatus, language, meetingId, onSummaryReady, recordingId, transcript]);
 
+  const handleDiagramGenerate = useCallback(async () => {
+    if (!meetingId) {
+      setDiagramStatus('error');
+      setSuccessMessage('회의 ID가 필요합니다.');
+      return;
+    }
+    setDiagramStatus('loading');
+    try {
+      const response = await fetch('/api/diagram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ meetingId }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error ?? '다이어그램 생성 실패');
+      }
+      const data = (await response.json()) as { mermaid: string };
+      setDiagramSource(data.mermaid);
+      setDiagramStatus('done');
+      setSuccessMessage('Mermaid 다이어그램이 생성되었습니다.');
+    } catch (err) {
+      setDiagramStatus('error');
+      setError(err instanceof Error ? err.message : '다이어그램 생성 중 오류 발생');
+    }
+  }, [meetingId]);
+
   return (
     <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
       <header className="space-y-1">
@@ -263,6 +292,14 @@ export function PipelinePanel({
           disabled={loading === 'summary'}
         >
           {loading === 'summary' ? '요약 중...' : '요약/Action 생성'}
+        </button>
+        <button
+          type="button"
+          onClick={handleDiagramGenerate}
+          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 disabled:opacity-50"
+          disabled={diagramStatus === 'loading' || !meetingId}
+        >
+          {diagramStatus === 'loading' ? '다이어그램 생성 중...' : 'Mermaid 다이어그램 생성'}
         </button>
       </div>
       <div className="rounded-lg border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700">
@@ -366,6 +403,17 @@ export function PipelinePanel({
               </table>
             </div>
           </div>
+          {diagramSource && (
+            <div>
+              <p className="text-sm font-semibold text-slate-800">Mermaid 다이어그램</p>
+              <div className="rounded-lg border border-slate-200 bg-white p-3">
+                <MermaidDiagram source={diagramSource} />
+                <pre className="mt-3 overflow-x-auto rounded bg-slate-900 p-3 text-xs text-slate-100">
+                  {diagramSource}
+                </pre>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </section>

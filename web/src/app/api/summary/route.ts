@@ -41,14 +41,29 @@ export async function POST(request: NextRequest) {
 
     const summary = await summarizeTranscript(transcriptText, { meetingId, language });
 
-    await supabaseAdmin
+    const summaryPayload = {
+      overview: summary.overview,
+      decisions: summary.decisions.join('\n'),
+      discussions: summary.discussions.join('\n'),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: existingSummary, error: existingSummaryError } = await supabaseAdmin
       .from('summaries')
-      .upsert({
-        meeting_id: meetingId,
-        overview: summary.overview,
-        decisions: summary.decisions.join('\n'),
-        discussions: summary.discussions.join('\n'),
-      }, { onConflict: 'meeting_id' });
+      .select('id')
+      .eq('meeting_id', meetingId)
+      .maybeSingle();
+
+    if (existingSummaryError && existingSummaryError.code !== 'PGRST116') {
+      console.error('[summary] fetch existing summary error', existingSummaryError);
+      return NextResponse.json({ error: '기존 요약을 확인하지 못했습니다.' }, { status: 500 });
+    }
+
+    if (existingSummary) {
+      await supabaseAdmin.from('summaries').update(summaryPayload).eq('id', existingSummary.id);
+    } else {
+      await supabaseAdmin.from('summaries').insert({ meeting_id: meetingId, ...summaryPayload });
+    }
 
     await supabaseAdmin.from('action_items').delete().eq('meeting_id', meetingId);
 

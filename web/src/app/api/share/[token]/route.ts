@@ -3,10 +3,10 @@ import { getSharePayload } from '@/lib/share';
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { token: string } },
+  context: { params: Promise<{ token: string }> },
 ) {
   try {
-    const token = params.token;
+    const { token } = await context.params;
     if (!token) {
       return NextResponse.json({ error: 'token이 필요합니다.' }, { status: 400 });
     }

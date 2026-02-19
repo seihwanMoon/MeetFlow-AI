@@ -129,7 +129,7 @@ export async function PUT(request: NextRequest) {
                 ? Math.min(1, Math.max(0, item.confidence))
                 : 0,
           }))
-          .filter((item) => item.description.trim().length > 0)
+          .filter((item: { description: string }) => item.description.trim().length > 0)
       : [];
 
     const normalizedSummary: SummaryResult = {

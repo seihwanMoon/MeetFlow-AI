@@ -73,7 +73,7 @@ const addActionSection = (
   });
 };
 
-export function buildMermaidDiagram(summary: SummaryResult) {
+export const buildMermaidDiagram = (summary: SummaryResult) => {
   const lines = ['graph TD', '  root(("회의 요약"))'];
 
   const overview = summary.overview?.trim();
@@ -92,4 +92,4 @@ export function buildMermaidDiagram(summary: SummaryResult) {
   }
 
   return lines.join('\n');
-}
+};

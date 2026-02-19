@@ -1,4 +1,4 @@
-import { File } from 'node:buffer';
+import { toFile } from 'openai/uploads';
 import { env } from './env';
 import { getOpenAIClient } from './openaiClient';
 
@@ -18,7 +18,7 @@ async function transcribeWithOpenAI(buffer: Buffer, filename: string, options?: 
     throw new Error('OPENAI_API_KEY가 설정되지 않았습니다.');
   }
   const client = getOpenAIClient();
-  const file = new File([buffer], filename, { type: 'application/octet-stream' });
+  const file = await toFile(buffer, filename, { type: 'application/octet-stream' });
   const response = await client.audio.transcriptions.create({
     file,
     model: env.OPENAI_TRANSCRIBE_MODEL,
